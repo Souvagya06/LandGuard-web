@@ -50,6 +50,8 @@ LandGuard AI is an integrated landslide risk monitoring and emergency response s
 ### 1. Regional Monitoring Engine (Northeast India)
 - **139 Real-World Hazard Hotspots:** Clustered from the NASA Global Landslide Catalog across Sikkim, Assam, Arunachal Pradesh, Meghalaya, Manipur, Mizoram, Nagaland, and Tripura.
 - **Continuous Hydrometeorological Fusion:** Live 72-hour precipitation accumulation and 24-hour forecast from Open-Meteo paired with cached SRTM elevation and slope models.
+- **Automated Weather API Fallback:** Automatic failover to OpenWeatherMap (OWM) 5-day forecast when Open-Meteo encounters daily cloud IP rate limits (HTTP 429), preserving live 24-hour forecast telemetry without interruption.
+- **Bundled Baseline Seed Cache:** Embedded seed dataset (`seed-cache.json`) ensuring fresh cloud deployments instantly boot with complete Copernicus DEM elevation, slope, and catalog records with 100% data coverage.
 - **Deterministic Risk Scoring:** Weighted index calculating continuous risk scores (0–100) mapped to four standardized bands: **Low**, **Moderate**, **High**, and **Critical**.
 - **Data Integrity & Honesty:** Missing readings are explicitly labeled as unavailable—no synthetic or hallucinated telemetry is ever fed to operators.
 
@@ -73,6 +75,11 @@ LandGuard AI is an integrated landslide risk monitoring and emergency response s
 - **Data-Only High-Priority FCM:** Backend initiates instant multicast push with automatic TTL enforcement matching alert expiry.
 - **Android Nearby Connections Mesh:** Phones receiving alerts relay them locally to nearby devices via BLE and Wi-Fi Direct without cellular or internet connectivity (up to 6 hops).
 - **Store-and-Forward Receipts:** Offline devices store alert receipts locally and flush delivery confirmations back to the API once connectivity is re-established.
+
+### 4. Cloud Resiliency & Fault-Tolerant Telemetry
+- **Dual-Provider Weather Telemetry:** Seamless primary-to-fallback pipeline (Open-Meteo → OpenWeatherMap) with spatial grid aggregation (~0.1° resolution) to minimize API consumption while guaranteeing live 24-hour rainfall forecast feeds.
+- **Zero-Cold-Start Seed Architecture:** Eliminates data unavailability during cold container spins by shipping precomputed Copernicus GLO-90 DEM terrain models and NASA GLC clusters within `seed-cache.json`.
+- **Adaptive Credential Parser:** Resilient Firebase Admin SDK credential loader that auto-detects and parses raw JSON, quoted Base64, or Base64 formats while stripping common copy-paste formatting anomalies (wrapper quotes, variable prefixes).
 
 ---
 
@@ -116,7 +123,7 @@ The alert payload structure is standardized across REST endpoints, WebSocket fra
 ### Machine Learning & Offline Geospatial Pipeline
 - **Languages & Tools:** Python 3.10+, pandas, NumPy, scikit-learn (`HistGradientBoostingClassifier`)
 - **Geospatial Processing:** rasterio, shapely, Google Earth Engine, Microsoft Planetary Computer STAC
-- **Data Sources:** NASA Global Landslide Catalog, SRTM 30m DEM, Sentinel-1 SAR, Sentinel-2 L2A, Open-Meteo
+- **Data Sources:** NASA Global Landslide Catalog, SRTM 30m DEM, Sentinel-1 SAR, Sentinel-2 L2A, Open-Meteo, OpenWeatherMap (fallback)
 
 ---
 
@@ -139,6 +146,7 @@ landguard-ai/
 │   │   └── monitoring/
 │   │       ├── analytics.js           # GLC spatial clustering & risk index
 │   │       ├── monitoring-service.js  # 139 areas management & background sync
+│   │       ├── seed-cache.json        # Bundled baseline terrain & catalog cache
 │   │       └── sources.js             # Bounding boxes, GLC cache & weather endpoints
 │   └── test/                          # Comprehensive Node test suite
 ├── frontend/
