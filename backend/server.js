@@ -47,7 +47,7 @@ app.use(cors({
     // Non-browser clients (Android, curl) send no Origin header.
     callback(null, !origin || ORIGINS.has(origin));
   },
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   maxAge: 600,
 }));
