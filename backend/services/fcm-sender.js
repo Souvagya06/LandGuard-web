@@ -9,7 +9,11 @@ const { toFcmData } = require('./alert-contract');
 let initError = null;
 
 function serviceAccount() {
-  const raw = (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 || '').trim();
+  let raw = (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 || '').trim();
+  // If user copied 'FIREBASE_SERVICE_ACCOUNT_BASE64=...' into the value box, strip the prefix:
+  if (raw.startsWith('FIREBASE_SERVICE_ACCOUNT_BASE64=')) {
+    raw = raw.slice('FIREBASE_SERVICE_ACCOUNT_BASE64='.length).trim();
+  }
   if (raw) {
     // If raw JSON was provided directly in the BASE64 variable, parse it directly:
     if (raw.startsWith('{') || (raw.startsWith("'") && raw.includes('"type"'))) {
